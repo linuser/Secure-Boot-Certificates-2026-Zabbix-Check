@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.0</version>
+    <template_groups>
+        <template_group>
+            <uuid>b4c520783b754ad9a180c4deb43cf5f1</uuid>
+            <name>Templates/Security</name>
+        </template_group>
+    </template_groups>
+    <templates>
+        <template>
+            <uuid>52cdafcc7fc44aa686e48e541ab2f796</uuid>
+            <template>Template Windows Secure Boot Certificates</template>
+            <name>Template Windows Secure Boot Certificates 2026</name>
+            <description>Ueberwacht den Status der Windows Secure Boot Zertifikate (Ablauf 2026).
+
+Referenzen:
+- https://support.microsoft.com/de-de/topic/5062710
+- https://techcommunity.microsoft.com/blog/windowsservernewsandbestpractices/windows-server-secure-boot-playbook-for-certificates-expiring-in-2026/4495789
+
+Kompatibel mit Zabbix Agent 1 und Agent 2.
+
+Installation:
+1. Skript nach C:\Program Files\Zabbix Agent 2\zabbix-agent-scripts\check_secureboot_certs.ps1 kopieren
+2. UserParameter eintragen:
+   UserParameter=secureboot.status,powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Program Files\Zabbix Agent 2\zabbix-agent-scripts\check_secureboot_certs.ps1"
+   Timeout=30
+3. Zabbix Agent Dienst neu starten (benoetigt Admin-Rechte!)
+4. Dieses Template dem Host zuweisen</description>
+            <groups>
+                <group>
+                    <name>Templates/Security</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>e0d47cc1cde444189961182251edb1db</uuid>
+                    <name>Secure Boot: Raw JSON Status</name>
+                    <type>ZABBIX_ACTIVE</type>
+                    <key>secureboot.status</key>
+                    <delay>12h</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Rohdaten der Secure Boot Zertifikatspruefung (JSON).</description>
+                    <tags>
+                        <tag><tag>component</tag><value>secure-boot</value></tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>2fa682cc96884a648337162fc5a4908d</uuid>
+                    <name>Secure Boot: Aktiviert</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.enabled</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Ist Secure Boot aktiviert? 1=Ja, 0=Nein</description>
+                    <valuemap><name>Secure Boot Ja/Nein</name></valuemap>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.secure_boot_enabled</parameter></parameters></step>
+                        <step><type>BOOL_TO_DECIMAL</type><parameters><parameter/></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>4f8279bf39f644638956b45066e8202b</uuid>
+                    <name>Secure Boot: Betroffen</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.affected</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Ist der Server vom Zertifikatsablauf betroffen? 1=Ja, 0=Nein</description>
+                    <valuemap><name>Secure Boot Ja/Nein</name></valuemap>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.affected</parameter></parameters></step>
+                        <step><type>BOOL_TO_DECIMAL</type><parameters><parameter/></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>eceb29b9abaf479092e0d91f4680f64f</uuid>
+                    <name>Secure Boot: Statuscode</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.statuscode</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>0=OK, 1=Warnung, 2=Kritisch</description>
+                    <valuemap><name>Secure Boot Statuscode</name></valuemap>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.status</parameter></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>41bcedb1560f4b24a3085028ae79f7e3</uuid>
+                    <name>Secure Boot: Statusmeldung</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.message</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Zusammenfassung als lesbarer Text.</description>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.message</parameter></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>b7db08111eed4d4a8c85f885a26e34cf</uuid>
+                    <name>Secure Boot: Deployment Status</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.deployment_status</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>UEFICA2023Status Registry-Wert: updated, in_progress, not_started, key_not_found</description>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.deployment_status</parameter></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>a9de8e87d9b348d8957d36d71a4e35de</uuid>
+                    <name>Secure Boot: Update konfiguriert</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.update_configured</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>1=AvailableUpdates Registry gesetzt, 0=nicht konfiguriert</description>
+                    <valuemap><name>Secure Boot Ja/Nein</name></valuemap>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.update_configured</parameter></parameters></step>
+                        <step><type>BOOL_TO_DECIMAL</type><parameters><parameter/></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>4125d0beb21249ccad5c10037ae8bb2b</uuid>
+                    <name>Secure Boot: Fehlende neue Zertifikate</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.missing</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Liste fehlender 2023-Zertifikate.</description>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.new_certs_missing</parameter></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>72a331a5f128497186e91c9da9111fa8</uuid>
+                    <name>Secure Boot: Event 1808 Anzahl (30 Tage)</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.event_1808_count</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Anzahl TPM-WMI Event 1808 (Erfolg) in den letzten 30 Tagen.</description>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.event_1808_count</parameter></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>46b9c047f395478eab8812653189df6c</uuid>
+                    <name>Secure Boot: Event 1801 Anzahl (30 Tage)</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.event_1801_count</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Anzahl TPM-WMI Event 1801 (Update noetig) in den letzten 30 Tagen.</description>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.event_1801_count</parameter></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+                <item>
+                    <uuid>7d935115f41c49f4a02a5f3192c0d146</uuid>
+                    <name>Secure Boot: Windows UEFI CA 2023 vorhanden</name>
+                    <type>DEPENDENT</type>
+                    <key>secureboot.new_win_uefi_ca_2023</key>
+                    <delay>0</delay>
+                    <history>90d</history>
+                    <trends>365d</trends>
+                    <value_type>UNSIGNED</value_type>
+                    <description>Ist das wichtigste neue Zertifikat (Windows UEFI CA 2023) in der DB installiert?</description>
+                    <valuemap><name>Secure Boot Ja/Nein</name></valuemap>
+                    <preprocessing>
+                        <step><type>JSONPATH</type><parameters><parameter>$.new_win_uefi_ca_2023</parameter></parameters></step>
+                        <step><type>BOOL_TO_DECIMAL</type><parameters><parameter/></parameters></step>
+                    </preprocessing>
+                    <master_item><key>secureboot.status</key></master_item>
+                    <tags><tag><tag>component</tag><value>secure-boot</value></tag></tags>
+                </item>
+            </items>
+            <valuemaps>
+                <valuemap>
+                    <uuid>43616670a3f2443bb1e6b39a27c41274</uuid>
+                    <name>Secure Boot Ja/Nein</name>
+                    <mappings>
+                        <mapping><value>0</value><newvalue>Nein</newvalue></mapping>
+                        <mapping><value>1</value><newvalue>Ja</newvalue></mapping>
+                    </mappings>
+                </valuemap>
+                <valuemap>
+                    <uuid>231bee454af14eda926de467cb1c74d0</uuid>
+                    <name>Secure Boot Statuscode</name>
+                    <mappings>
+                        <mapping><value>0</value><newvalue>OK</newvalue></mapping>
+                        <mapping><value>1</value><newvalue>Warnung</newvalue></mapping>
+                        <mapping><value>2</value><newvalue>Kritisch</newvalue></mapping>
+                    </mappings>
+                </valuemap>
+            </valuemaps>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <uuid>8034e079b1e94e919a77fd8d8bf7535b</uuid>
+            <expression>last(/Template Windows Secure Boot Certificates/secureboot.statuscode)=2</expression>
+            <name>Secure Boot: KRITISCH - Zertifikat-Update dringend erforderlich auf {HOST.NAME}</name>
+            <priority>HIGH</priority>
+            <description>Der Server {HOST.NAME} hat ein kritisches Problem mit den Secure Boot Zertifikaten.
+
+Statusmeldung: {?last(/Template Windows Secure Boot Certificates/secureboot.message)}
+Deployment-Status: {?last(/Template Windows Secure Boot Certificates/secureboot.deployment_status)}
+
+Moegliche Ursachen:
+- Nur alte 2011-Zertifikate vorhanden, keine neuen 2023
+- Deployment-Fehler (UEFICA2023Error oder Event 1795/1803)
+
+Massnahmen:
+- Registry: AvailableUpdates auf 0x5944 setzen
+- Oder GPO: "Enable Secure Boot certificate deployment" aktivieren
+- Bei Event 1803: OEM/Firmware-Hersteller kontaktieren
+
+Ref: https://support.microsoft.com/de-de/topic/5062710</description>
+            <tags><tag><tag>scope</tag><value>security</value></tag></tags>
+        </trigger>
+        <trigger>
+            <uuid>348ea750aee4413980ad15c63e8810d9</uuid>
+            <expression>last(/Template Windows Secure Boot Certificates/secureboot.statuscode)=1</expression>
+            <name>Secure Boot: WARNUNG - Zertifikat-Update unvollstaendig auf {HOST.NAME}</name>
+            <priority>WARNING</priority>
+            <description>Der Server {HOST.NAME} hat das Secure Boot Zertifikat-Update nur teilweise durchgefuehrt oder das Deployment laeuft noch.
+
+Statusmeldung: {?last(/Template Windows Secure Boot Certificates/secureboot.message)}
+Fehlend: {?last(/Template Windows Secure Boot Certificates/secureboot.missing)}
+
+Ref: https://support.microsoft.com/de-de/topic/5062710</description>
+            <dependencies>
+                <dependency>
+                    <name>Secure Boot: KRITISCH - Zertifikat-Update dringend erforderlich auf {HOST.NAME}</name>
+                    <expression>last(/Template Windows Secure Boot Certificates/secureboot.statuscode)=2</expression>
+                </dependency>
+            </dependencies>
+            <tags><tag><tag>scope</tag><value>security</value></tag></tags>
+        </trigger>
+        <trigger>
+            <uuid>d358adb8560e47349beb70b79c2757ca</uuid>
+            <expression>last(/Template Windows Secure Boot Certificates/secureboot.enabled)=1 and last(/Template Windows Secure Boot Certificates/secureboot.update_configured)=0 and last(/Template Windows Secure Boot Certificates/secureboot.statuscode)&gt;0</expression>
+            <name>Secure Boot: Deployment nicht konfiguriert auf {HOST.NAME}</name>
+            <priority>WARNING</priority>
+            <description>Secure Boot ist aktiv auf {HOST.NAME}, aber das Zertifikat-Deployment wurde noch nicht konfiguriert (AvailableUpdates nicht gesetzt).
+
+Windows Server erhaelt die neuen Zertifikate NICHT automatisch!
+Setze Registry AvailableUpdates=0x5944 oder aktiviere die GPO.</description>
+            <tags><tag><tag>scope</tag><value>security</value></tag></tags>
+        </trigger>
+    </triggers>
+</zabbix_export>

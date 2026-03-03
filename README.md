@@ -43,6 +43,9 @@ Auch betroffen sind **alle Generation-2 VMs** (Hyper-V, VMware) sowie physische 
 - [MS Support: Secure Boot Zertifikat-Ablauf](https://support.microsoft.com/de-de/topic/5062710)
 - [MS TechCommunity: Windows Server Playbook](https://techcommunity.microsoft.com/blog/windowsservernewsandbestpractices/windows-server-secure-boot-playbook-for-certificates-expiring-in-2026/4495789)
 - [MS Support: IT-Leitfaden fuer Organisationen](https://support.microsoft.com/en-us/topic/e2b43f9f-b424-42df-bc6a-8476db65ab2f)
+- [MS Windows IT Pro Blog: Act now - Secure Boot certificates expire in June 2026](https://techcommunity.microsoft.com/blog/windows-itpro-blog/act-now-secure-boot-certificates-expire-in-june-2026/4426856)
+- [heise online: Microsoft-Anleitung fuer Secure-Boot-Zertifikate von Windows Servern](https://www.heise.de/news/Microsoft-Anleitung-fuer-Secure-Boot-Zertifikate-von-Windows-Servern-11187588.html)
+- [heise online: Vorbereiten auf Einschlag - Microsoft warnt vor Secure-Boot-Zertifikat-Update](https://www.heise.de/news/Vorbereiten-auf-Einschlag-Microsoft-warnt-vor-Secure-Boot-Zertifikat-Update-10461866.html)
 
 ---
 
@@ -78,7 +81,13 @@ README.md                          # Diese Datei
 - **Administratorrechte** auf dem Zielserver (fuer UEFI-Variablen-Zugriff)
 - PowerShell 5.1+ (auf allen unterstuetzten Windows-Versionen vorinstalliert)
 
-### 1. Skript auf den Zielserver kopieren
+### 1. OEM-Firmware aktualisieren (WICHTIG - VOR dem Zertifikats-Deployment!)
+
+> **Microsoft betont ausdruecklich:** Firmware-Updates der OEMs (BIOS/UEFI) muessen VOR dem Zertifikats-Deployment angewendet werden. Sie sind die Voraussetzung fuer korrekt angewendete Windows-Secure-Boot-Updates. Prueft beim jeweiligen Hersteller (Dell, HPE, Lenovo etc.) nach aktueller Firmware.
+
+Hintergrund: Die neuen Zertifikate adressieren auch die BlackLotus-UEFI-Bootkit-Schwachstelle ([CVE-2023-24932](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2023-24932)), die den ungesicherten Bootprozess als Angriffsvektor nutzen kann.
+
+### 2. Skript auf den Zielserver kopieren
 
 ```powershell
 # Zielverzeichnis erstellen (falls noetig)
@@ -90,7 +99,7 @@ Copy-Item check_secureboot_certs.ps1 "C:\Program Files\Zabbix Agent 2\zabbix-age
 
 > **Hinweis:** Den Pfad an eure Umgebung anpassen. Das Skript kann in jedem beliebigen Verzeichnis liegen, solange der UserParameter-Pfad uebereinstimmt.
 
-### 2. UserParameter konfigurieren
+### 3. UserParameter konfigurieren
 
 In `zabbix_agent2.conf` (oder `zabbix_agentd.conf` fuer Agent 1) bzw. als eigene `.conf` Datei in `zabbix_agent2.d/`:
 
@@ -101,19 +110,19 @@ Timeout=30
 
 > **Wichtig:** `Timeout=30` setzen! Das Skript fragt UEFI-Variablen, Registry und Event Log ab. Der Default-Timeout von 3 Sekunden ist zu kurz.
 
-### 3. Zabbix Agent neu starten
+### 4. Zabbix Agent neu starten
 
 ```cmd
 net stop "Zabbix Agent 2" && net start "Zabbix Agent 2"
 ```
 
-### 4. Template importieren
+### 5. Template importieren
 
 1. Zabbix Web UI > **Datenerfassung** > **Templates** > **Importieren**
 2. `zbx_template_secureboot_certs.xml` hochladen
 3. Template dem Host oder der Hostgruppe zuweisen
 
-### 5. Manuell testen
+### 6. Manuell testen
 
 ```powershell
 # Als Administrator ausfuehren!
